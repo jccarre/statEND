@@ -1,10 +1,10 @@
 from log import readCSV
-
+import threading
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox
-#from foyer import Foyer
+from foyer import Foyer
 from secteur import Secteur
 from region import Region
 from province import Province
@@ -41,20 +41,17 @@ class appli:
         self.combobox = ttk.Combobox(frame_haut, values=[a for a in self.choixActions.keys()], width=30)
         self.combobox.set("Choisir une grandeur à afficher")
         self.combobox.bind("<<ComboboxSelected>>", self.on_selection)
-        self.combobox["state"] = "disabled"
 
         self.boutonGenererGraphe = ttk.Button(frame_haut, text="Générer graphe", command=self.genererGraphe)
-        self.boutonGenererGraphe["state"] = "disabled"
-
 
         self.checkboxVar = {}
 
-        self.boutonFichierGeographie.grid(row=0, column=0, padx=30, pady=30)
+        self.boutonFichierGeographie.grid(row=0, column=0)
         self.labelFichierGeographie.grid(row=0, column=1)
-        #self.boutonFichierConseillers.grid(row=1, column=0)
-        #self.labelFichierConseillers.grid(row=1, column=1)
-        #self.boutonFichierCouples.grid(row=2, column=0)
-        #self.labelFichierCouples.grid(row=2, column=1)
+        self.boutonFichierConseillers.grid(row=1, column=0)
+        self.labelFichierConseillers.grid(row=1, column=1)
+        self.boutonFichierCouples.grid(row=2, column=0)
+        self.labelFichierCouples.grid(row=2, column=1)
         self.combobox.grid(row=0,column=3, padx=30)
         self.boutonGenererGraphe.grid(row=1, column=3, padx=30)
 
@@ -65,23 +62,20 @@ class appli:
         self.frameCheckBoxRegions = tk.Frame(self.frameCheckBoxZones)
         self.frameCheckBoxProvinces = tk.Frame(self.frameCheckBoxZones)
         labelsecteurs = tk.Label(self.frameCheckBoxZones, text="Secteurs", font='Helvetica 10')
-        labelsecteurs.grid(row=0, column=0, padx=15, pady=15)
+        labelsecteurs.grid(row=0, column=0)
         labelregions = tk.Label(self.frameCheckBoxZones, text="Regions", font='Helvetica 10')
-        labelregions.grid(row=1, column=0, padx=15, pady=15)
+        labelregions.grid(row=1, column=0)
         labelprovinces = tk.Label(self.frameCheckBoxZones, text="Provinces", font='Helvetica 10')
-        labelprovinces.grid(row=2, column=0, padx=15, pady=15)
-        self.frameCheckBoxSecteurs.grid(row=0, column=1, padx=15, pady=15)
-        self.frameCheckBoxRegions.grid(row=1, column=1, padx=15, pady=15)
-        self.frameCheckBoxProvinces.grid(row=2, column=1, padx=15, pady=15)
+        labelprovinces.grid(row=2, column=0)
+        self.frameCheckBoxSecteurs.grid(row=0, column=1)
+        self.frameCheckBoxRegions.grid(row=1, column=1)
+        self.frameCheckBoxProvinces.grid(row=2, column=1)
         self.checkboxZone = {}
-
 
         self.win.mainloop()
 
     def genererGraphe(self):
         try:
-            if not self.listeZoneAAfficher:
-                raise Exception("Veuillez sélectionner au moint une zone géographique (secteur, région ou province) à analyser")
             self.actionARealiser()
             generer_image(fichier=self.fichierATracer, columns=self.listeZoneAAfficher)
         except Exception as e:
@@ -92,8 +86,6 @@ class appli:
         selected_item = self.combobox.get()
         self.actionARealiser = self.choixActions[selected_item][1]
         self.fichierATracer = self.choixActions[selected_item][0]
-        if str(self.boutonGenererGraphe["state"]) == "disabled":
-            self.boutonGenererGraphe["state"] = "enabled"
 
     def on_checkbox_click(self):
         self.listeZoneAAfficher.clear()
@@ -119,7 +111,6 @@ class appli:
         nbProvince = str(len(Province.tout))
         message = nbSecteurs + " secteurs    |    " + nbRegions + " régions    |    " + nbProvince + " provinces"
         self.labelFichierGeographie.config(text=message)
-        self.combobox["state"] = "enabled"
 
     def remplirCheckBoxZone(self, zones, frame):
         numCheckBox = 0

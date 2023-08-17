@@ -1,9 +1,8 @@
-from pandas import read_csv as pdRead_csv
-
+import pandas as pd
 from matplotlib import pyplot as plt
 
 def generer_image(fichier, columns):
-    df = pdRead_csv(fichier, sep=";")
+    df = pd.read_csv(fichier, sep=";")
     legendes = []
     for c in columns:
         legendes.append(c)

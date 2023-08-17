@@ -1,4 +1,5 @@
 from datetime import datetime, date
+import os.path
 from tkinter import messagebox
 
 from log import readCSV, logCSV
@@ -22,8 +23,6 @@ def appliquerCalculAZones(fonctionRemplissage, nomFichier, est_grandeur_intensiv
     ecrire_entete_CSV(osPath.join("temp", nomFichier + ".csv"), noms_secteurs)
     annees = [annee for annee in osListdir("Foyers")]
     annees.sort()
-    if not annees:
-        raise Exception("Le dossier 'Foyers' est vide. Il doit contenir les fichiers csv à analyser")
     for annee in annees:
         # On vérifie que le nom du fichier correspond au format attendu.
         pattern = re.compile("^[0-9]+\.csv$")
@@ -63,7 +62,7 @@ def appliquerCalculAZones(fonctionRemplissage, nomFichier, est_grandeur_intensiv
                 dico[province.nom] += dico[s]
             if est_grandeur_intensive:
                 dico[province.nom] = dico[province.nom] / len(secteurs)
-        logCSV(dico, nom_fichier=osPath.join("temp", nomFichier + ".csv"))
+        logCSV(dico, nom_fichier=os.path.join("temp", nomFichier + ".csv"))
 
 def nbFoyerParEquipe():
     def f(secteur, reader, *t, **d):
@@ -79,6 +78,7 @@ def nbFoyerParEquipe():
 
 def ageMoyen():
     def f(secteur, reader, annee, *t, **d):
+        age_total = 0
         def calculAge(dateNaissance, annee):
             dateNai = datetime.strptime(dateNaissance, "%d/%m/%Y").date()
             return int(annee) - dateNai.year
