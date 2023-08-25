@@ -33,11 +33,7 @@ def appliquerCalculAZones(fonctionRemplissage, nomFichier, est_grandeur_intensiv
             continue
         reader = readCSV(osPath.join("Foyers", annee))
 
-        # On vérifie que le fichier CSV utilise bien le point-virgule comme délimiteur de champ
-        nb_colonnes_par_ligne = sum([len(ligne.keys()) for ligne in reader])/len(reader)
-        if nb_colonnes_par_ligne < 5:
-            messagebox.showwarning("Attention",
-                                   "Ce script nécessite l'utilisation de point-virgule comme séparateur de champ dans les fichiers CSV.\nIl semble que le fichier " + annee + " utilise un autre type de séparateur, qui n'est pas accepté.\n\nCe fichier sera donc ignoré.")
+        if not verifier_fichier_CSV(reader, annee):
             continue
         annee = annee.split(".")[0]
         dico = {}
@@ -47,6 +43,8 @@ def appliquerCalculAZones(fonctionRemplissage, nomFichier, est_grandeur_intensiv
                 dico[secteur] = fonctionRemplissage(secteur, reader, annee)
             except KeyError as e:
                 raise Exception("Impossible de trouver la colonne " + str(e) + " dans le fichier " + annee + ".csv")
+            except Exception as e:
+                print(e)
 
         for region in Region.tout:
             secteurs = [s.nom for s in Secteur.tout if s.region == region.nom]
@@ -110,5 +108,29 @@ def ecrire_entete_CSV(nomFichier, noms_secteurs):
         filout.write(entete + "\n")
 
 
+def verifier_fichier_CSV(reader, nom_fichier):
+    # On vérifie que le fichier CSV utilise bien le point-virgule comme délimiteur de champ
+    nb_colonnes_par_ligne = sum([len(ligne.keys()) for ligne in reader]) / len(reader)
+    if nb_colonnes_par_ligne < 5:
+        messagebox.showwarning("Attention",
+                               "Ce script nécessite l'utilisation de point-virgule comme séparateur de champ dans les fichiers CSV.\nIl semble que le fichier " + annee + " utilise un autre type de séparateur, qui n'est pas accepté.\n\nCe fichier sera donc ignoré.")
+        return False
 
+    # On vérifie que tous les secteurs, régions et provinces qui se trouvent dans ce fichier existent dans le fichier dé géographie:
+    secteurs_connus = [s.nom for s in Secteur.tout]
+    secteurs_manquants = {ligne['Secteur'] for ligne in reader if ligne['Secteur'] not in secteurs_connus}
+    secteurs_presents = {ligne['Secteur'] for ligne in reader}
+    if secteurs_manquants:
+        message = "Le secteur {secteur} qui se trouve dans le fichier {fichier} n'existe pas dans le fichier de géographie.\n" + \
+                  "Veuillez vérifier qu'il s'y trouve et qu'il est correctement orthographié"
+        message = message.format(secteur=list(secteurs_manquants)[0], fichier=nom_fichier)
+        if len(secteurs_manquants) > 1:
+            message = "Les secteurs {secteurs} qui se trouve dans le fichier {fichier} n'existent pas dans le fichier de géographie.\n" + \
+                      "Veuillez vérifier qu'ils s'y trouvent et qu'il sont correctement orthographiés"
+            liste_secteurs = "\n"
+            for s in secteurs_manquants:
+                liste_secteurs += s + "\n"
+            message = message.format(secteurs=liste_secteurs, fichier=nom_fichier)
+        messagebox.showwarning("Attention", message)
+        return False
 
