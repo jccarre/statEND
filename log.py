@@ -4,7 +4,9 @@ from os import path, makedirs, remove, rename
 from csv import DictWriter as csvDictWriter
 from csv import DictReader as csvDictReader
 
+
 delimiter = ";"
+encodages_possibles = ['utf-8']
 
 def logText(message, dossier="log"):
     nom_fichier = create_file_and_folder(dossier)
@@ -14,7 +16,7 @@ def logText(message, dossier="log"):
         f.write(dt_string + delimiter + message + "\n")
 
 
-def logCSV(*dictionaries, nom_fichier=""):
+def logCSV(*dictionaries, nom_fichier="", encoding='utf-8'):
     """Takes one or several dictionaries as input, and logs all of its data in a CSV file.
     The header of the file is automatically updated, based on the keys of the input dictionaries."""
     #nom_fichier = create_file_and_folder(dossier)
@@ -27,7 +29,7 @@ def logCSV(*dictionaries, nom_fichier=""):
     #   final_dictionary['time'] = now.strftime("%H:%M:%S")
 
     fieldnames = update_header(final_dictionary, nom_fichier)
-    with open(nom_fichier, 'a', encoding='utf-8') as f:
+    with open(nom_fichier, 'a', encoding=encoding) as f:
         writer = csvDictWriter(f, fieldnames=fieldnames, delimiter=";")
         writer.writerow(final_dictionary)
 
@@ -57,14 +59,20 @@ def update_header(dictionnaire, nom_fichier):
     """
     Reads the keys of the dictionnary. Adds those keys at the end of the first line if they are not already there
     """
+    
     string_to_add = ""
-    with open(nom_fichier, 'r', encoding='utf-8') as f:
-        already_present_keys = f.readline().strip().split(delimiter)
-        for key in dictionnaire.keys():
-            if key not in already_present_keys:
-                string_to_add += delimiter + key
-                already_present_keys.append(key)
+    try:
+        with open(nom_fichier, 'r', encoding='utf-8') as f:
+            already_present_keys = f.readline().strip().split(delimiter)
+            for key in dictionnaire.keys():
+                if key not in already_present_keys:
+                    string_to_add += delimiter + key
+                    already_present_keys.append(key)
+    except Exception as e:            
+        raise Exception("impossible de lire le fichier " + nom_fichier + " : problème d'encodage. Il doit être encodé en UTF-8.")
+        
     if string_to_add:
+        #with open(nom_fichier, 'r', encoding=encodage_detecte) as f:
         with open(nom_fichier, 'r', encoding='utf-8') as f:
             with open(nom_fichier + "_copy", 'w', encoding='utf-8') as f_out:
                 first_line = f.readline().strip()
@@ -81,12 +89,12 @@ def create_file_and_folder(dossier, nom_fichier):
         makedirs(dossier)
     nom_fichier = path.join(dossier, nom_fichier)
     if not path.isfile(nom_fichier):
-        with open(nom_fichier, 'a') as f:
-            f.write("year")
+        with open(nom_fichier, 'a', encoding='utf-8') as f:
+            f.write("année")
 
     return nom_fichier
 
-def readCSV(nomFichier):
-    with open(nomFichier, 'r', encoding='utf-8', newline='') as csvfile:
+def readCSV(nomFichier, encoding='utf-8'):
+    with open(nomFichier, 'r', encoding=encoding, newline='') as csvfile:
         reader = csvDictReader(csvfile, delimiter=";")
         return [row for row in reader]
