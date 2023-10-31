@@ -5,4 +5,4 @@ Petit exécutable pour générer des statistiques afin d'aider les responsables 
 Le code source est fourni afin de permettre à ceux qui le souhaiteraient de faire évoluer ce petit outil.
 Pour générer un exécutable windows, utiliser pyinstaller : 
 
-```pyinstaller --onefile votre_fichier.py```
+```pyinstaller --onefile main.py```
