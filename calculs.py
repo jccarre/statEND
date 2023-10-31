@@ -44,21 +44,21 @@ def appliquerCalculAZones(fonctionRemplissage, nomFichier, est_grandeur_intensiv
             reader = readCSV(osPath.join("Foyers", annee))
         except UnicodeDecodeError as e1:
             try:
-                print("Ancien encodage détecté : " + encodage_detecte)
+                #print("Ancien encodage détecté : " + encodage_detecte)
                 reader = readCSV(osPath.join("Foyers", annee), encoding=encodage_detecte)
             except UnicodeDecodeError as e:
-                print(type(e))
+                #print(type(e))
                 fichierAlire = osPath.join("Foyers", annee)
                 rawdata = open(fichierAlire, "rb").read()
                 result = chardetDetect(rawdata)
                 encodage_detecte = result['encoding']
-                print("Nouvel encodage détecté : " + encodage_detecte)
+                print("Nouvel encodage détecté : " + encodage_detecte + ". Il est conseillé d'utiliser l'encodage UTF-8 dans tous les fichiers".)
                 try:
                     reader = readCSV(osPath.join("Foyers", annee), encoding=encodage_detecte)
                 except UnicodeDecodeError:
                     raise Exception("Impossible de détecter l'encodage utilisé dans le fichier " + fichierAlire + ".\nVeuillez convertir vos fichiers en encodage UTF-8.")
                 
-        if not verifier_fichier_CSV(reader, annee, ):
+        if not verifier_fichier_CSV(reader, annee):
             continue
         annee = annee.split(".")[0]
         dico = {}
@@ -115,7 +115,6 @@ def ageMoyen():
         return sum(ages) / len(ages)
 
     appliquerCalculAZones(f, "ageMoyen")
-    print("fin de la fonction ageMoyen")
 
 def nbFoyers():
     def f(secteur, reader, *t, **d):
